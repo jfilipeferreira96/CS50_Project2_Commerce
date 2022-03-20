@@ -1,0 +1,89 @@
+{% extends "auctions/layout.html" %} {% block body %}
+<div class="container-fluid py-5" id="categories">
+
+  <h3 class="mt-4 mb-5 text-center"><strong>{{title}}</strong></h3>
+  {% for auction in active_auctions %}
+  <div class="row justify-content-center mb-3">
+    <div class="col-md-9 col-xl-9">
+      <div class="card shadow-0 border rounded-3">
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-12 col-lg-4 col-xl-4 mb-4 mb-lg-0">
+              <div class="bg-image hover-zoom ripple rounded ripple-surface">
+                <img src="{{auction.image_url}}" class="w-100"/>
+                <a href="#!">
+                  <div class="hover-overlay">
+                    <div class="mask" style="background-color: rgba(253, 253, 253, 0.15)"></div>
+                  </div>
+                </a>
+              </div>
+            </div>
+            <div class="col-md-6 col-lg-4 col-xl-4">
+              <h4 class="text-center fs-3 mb-2">{{auction.title}}</h4>
+              <h5 class="text-muted">Description:</h5>
+              <p class="text mb-4 mb-md-0">
+                {{auction.description}}
+              </p>
+            </div>
+            <div class="col-md-6 col-lg-4 col-xl-4 border-sm-start-none border-start text-center">
+              <div class="align-items-center mb-1">
+                <h4 class="mb-1 me-1 ">Current price:</h4>
+                {% if auction.starting_bid > auction.current_bid %}
+                <h4 class="mb-1 me-1">${{auction.starting_bid}}</h4>
+                {% else %}
+                <h4 class="mb-1 me-1">${{auction.current_bid}}</h4>
+                {% endif %}
+              </div>
+              <h6 class="text-success">Free shipping</h6>
+              <div class="d-flex flex-column mt-4">
+                {% if auction.seller_id == user_id %}
+                <!-- User is the Seller ( cannot add it to the watchlist but he can close the auction!)-->
+                <form action="{%  url 'closebid' auction.id %}" method="post">
+                  {% csrf_token %}
+                  <input type="hidden" name="info" value="index">
+                  <button type="submit" class="btn btn-outline-danger btn-lg mt-2" type="button"> Close the Auction</button>
+                </form>
+                {% elif auction.id not in watchlist or watchlist == 'none' and auction.seller_id != user_id %}
+                <form action="{%  url 'watchlist' %}" method="post">
+                  {% csrf_token %}
+                  <input type="hidden" name="auction_id" value="{{auction.id}}">
+                  <input type="hidden" name="info" value="add">
+                  <button type="submit" class="btn btn-outline-success btn-lg mt-2" type="button"> Add to watchlist</button>
+                </form>
+                {% else %}
+                <form action="{%  url 'watchlist' %}" method="post">
+                  {% csrf_token %}
+                  <input type="hidden" name="auction_id" value="{{auction.id}}">
+                  <input type="hidden" name="info" value="del">
+                  <button type="submit" class="btn btn-outline-danger btn-lg mt-2" type="button"> Remove from watchlist</button>
+                </form>
+                {% endif %}
+                <a href="{%  url 'auction' auction.id %}" class="btn btn-success btn-lg mt-2">Details</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% empty %}
+  <div class="row justify-content-center mb-3">
+    <div class="col-md-3 col-xl-3">
+      <div class="card shadow-0 border rounded-3">
+        <div class="card-body">
+          <div class="row">
+            <img src="https://memegenerator.net/img/instances/43752070.jpg"  class="w-100" alt="Doge Meme Empty">
+          </div>
+          <div class="text-center mt-2">
+            <a href="{% url 'categories' %}" class="btn btn-success ">Go back</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+  
+          
+</div>
+
+{% endblock %}

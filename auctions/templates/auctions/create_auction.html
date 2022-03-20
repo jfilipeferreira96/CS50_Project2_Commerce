@@ -1,0 +1,54 @@
+{% extends "auctions/layout.html" %}
+{% load static %}
+
+
+{% block body %}
+<div class="container py-5" id="create">
+  <div class="row px-3">
+    <div class="col-lg-6 col-xl-5 col-md-8 flex-row mx-auto px-3">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="title text-center mt-2">
+                    Create your auction
+                </h4>
+                <form class="form-box px-3" id="register_form" autocomplete="off" action="{% url 'create' %}"  method="post">
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                      <label for="title" class="form-label"><strong>Title</strong></label>
+                      <input type="text" name="title" id="title" class="form-control" placeholder="Title of the auction" required>
+                    </div>
+                    <div class="mb-3">
+                      <label for="title" class="form-label"><strong>Starting Price ($)</strong></label>
+                      <input type="number" min="1" step="any" name="starting_price" id="starting_price" class="form-control" placeholder="Price ($)" required>
+                    </div>
+                    <div class="mb-3">
+                      <label for="description" class="form-label"><strong>Description</strong></label>
+                      <textarea type="text" name="description" class="form-control" placeholder="Insert a description" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                      <label for="title" class="form-label"><strong>Image URL</strong></label>
+                      <input type="text" name="image_url" id="image_url" class="form-control" placeholder="Insert an URL" required>
+                    </div>
+                    <div class="mb-3">
+                      <select name="category_select" class="form-select form-select-lg mb-3">
+                        {% for category in categories %}
+                        <option value="{{category.id}}">{{category.title}}</option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                    {% if user.is_authenticated %}
+                    <input type="hidden" name="user_id" value="{{ user.id }}" class="form-control">
+                    {% endif %}
+                    <div class="d-flex flex-column">
+                      <button class="btn btn-success" type="submit">Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+  
+</div>   
+    
+{% endblock %}

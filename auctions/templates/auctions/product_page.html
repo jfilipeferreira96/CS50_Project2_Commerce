@@ -1,0 +1,144 @@
+{% extends "auctions/layout.html" %}
+{% load static %}
+
+
+{% block body %}
+<div class="container pb-5" id="product_page">
+  <div class="row mt-2">
+
+    <div class="col-lg-5 mt-3 d-flex align-items-stretch">
+      <div class="card">
+        <div class="card-body">
+          <div class="bg-image hover-zoom rounded ">
+            <img class="card-img img-fluid" src="{{product.image_url}}" alt="Product Image" >
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-7 mt-3 d-flex align-items-stretch">
+      <div class="card">
+        <div class="card-body">
+          <h1 class="h2 text-center"><strong>{{product.title}}</strong></h1>
+          <p class="h3 py-2 text-muted text-center"><strong>Current price:</strong></p>
+          {% if product.starting_bid > product.current_bid %}
+          <p class="h3 text-center">${{product.starting_bid}}</p>
+          {% else %}
+          <p class="h3 text-center">${{product.current_bid}}</p>
+          {% endif %}
+          <h6 class="text-muted"><strong>Description:</strong></h6>
+          <p>{{product.description}}</p>
+            {% if product.active %}
+            <div class="row text-center d-flex justify-content-center">
+              <div class="col-auto">
+                {% if product.seller_id != request.user.id %}
+                <ul class="list-inline pb-3">
+                  <form method="post" action="{% url 'bid' product.id %}">
+                    {% csrf_token %}
+                    <li class="list-inline-item">Offer:</li>
+                    <li class="list-inline-item"><input name="bid_input" type="number" min="1" step="any" class="form-control" placeholder="0.00" required></li>
+                    <li class="list-inline-item"><button type="submit" class="btn btn-success btn-size">Place Bid</button></li>
+                  </form>
+                </ul>
+                {% else%}
+                <div class="text-center mt-2">
+                  <div class="alert alert-dark" role="alert">
+                    <strong>You are the owner of this Auction.</strong>
+                  </div>
+                </div>
+                {% endif %}
+              </div>
+            </div>
+            {% if error %}
+              <div class="text-center mt-2">
+                <div class="alert alert-danger" role="alert">
+                  {{ error }}
+                </div>
+              </div>
+            {% endif %}
+            <div class="row pb-3">
+              <div class="col d-grid">
+                {% if product.seller_id == request.user.id %}
+                <form action="{%  url 'closebid' product.id %}" method="post">
+                  {% csrf_token %}
+                  <input type="hidden" name="info" value="product_page">
+                  <button type="submit" class="btn btn-outline-danger btn-lg w-100" type="button"> Close the Auction</button>
+                </form>
+                {% elif watchlist == 0 %}
+                <form action="{%  url 'watchlist' %}" method="post">
+                  {% csrf_token %}
+                  <input type="hidden" name="auction_id" value="{{product.id}}">
+                  <input type="hidden" name="info" value="add">
+                  <button type="submit" class="btn btn-outline-success btn-lg w-100" type="button"> Add to Watchlist</button>
+                </form>
+                {% else %}
+                <form action="{%  url 'watchlist' %}" method="post">
+                  {% csrf_token %}
+                  <input type="hidden" name="auction_id" value="{{product.id}}">
+                  <input type="hidden" name="info" value="del">
+                  <button type="submit" class="btn btn-danger btn-lg w-100" type="button"> Remove from Watchlist</button>
+                </form>
+                {% endif %}
+              </div>
+            </div>
+            {% else %} {% comment %} Auction is Closed / Finished {% endcomment %}
+              <div class="text-center mt-2">
+                <div class="alert alert-dark" role="alert">
+                  <strong>This auction is over.</strong>
+                  {% if request.user.id and request.user.id == product.current_bid_user.id %}
+                  <p style="margin-bottom:0px" class="text-success"><strong>CONGRATS! You won this auction. We will contact you soon.</strong></p>
+                  {% endif %}
+                </div>
+              </div>
+            {% endif %}
+            
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Comment Section-->
+  <div class="row d-flex justify-content-center">
+    <div class="col-md-12 col-lg-12 mt-3">
+      <div class="card text-dark">
+        <div class="card-body p-4">
+          <p class="h4 text-muted"><strong>Comment Section</strong></p>
+          <p class="fw-light mb-2 pb-2">Latest Comments section by users</p>
+          <form autocomplete="off" action="{% url 'comment' product.id %}"  method="post">
+            {% csrf_token %}
+            {% if product.active %}
+            <textarea name="comment_area" id="comment_area" cols="5" rows="5" class="form-control"></textarea>
+            {% else %}
+            <textarea name="comment_area" id="comment_area" cols="5" rows="5" class="form-control" disabled></textarea>
+            {% endif %}
+            <div class="text-end mt-2">
+              {% if product.active %}
+              <button type="submit" class="btn btn-success btn-size">Add comment</button>
+              {% else %}
+              <button type="submit" class="btn btn-success btn-size" disabled>Add comment</button>
+              {% endif %}
+            </div> 
+          </form>
+          {% for comment in comments %}
+          <hr class="my-2 mb-2">
+          <div class="d-flex flex-start">
+            <div>
+              <h6 class="fw-bold mb-1">{{comment.user.username}}</h6>
+              <div class="d-flex align-items-center mb-3">
+                <p class="text-muted mb-0">{{comment.timestamp}}</p>
+              </div>
+              <p class="mb-0">
+                {{comment.comment}}
+              </p>
+            </div>
+          </div>
+          {% empty%}
+            <hr class="my-2 mb-2">
+          {% endfor %}
+        </div>
+        <hr class="my-0">
+      </div>
+    </div>
+  </div>
+</div>   
+    
+{% endblock %}
